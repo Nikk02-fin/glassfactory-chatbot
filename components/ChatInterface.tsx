@@ -432,13 +432,17 @@ export default function ChatInterface() {
     setDisplayedText('');
     userScrolledUp.current = false; // Reset scroll state when typing starts
     
-    let currentIndex = 0;
-    const typingSpeed = 30; // milliseconds per character
+    // Split text into words for word-by-word typing
+    const words = fullText.split(' ');
+    let currentWordIndex = 0;
+    const typingSpeed = 80; // milliseconds per word
     
     typingIntervalRef.current = setInterval(() => {
-      if (currentIndex < fullText.length) {
-        setDisplayedText(fullText.slice(0, currentIndex + 1));
-        currentIndex++;
+      if (currentWordIndex < words.length) {
+        // Build display text with current words
+        const wordsToShow = words.slice(0, currentWordIndex + 1);
+        setDisplayedText(wordsToShow.join(' '));
+        currentWordIndex++;
         
         // Only auto-scroll if user hasn't scrolled up
         if (!userScrolledUp.current && messagesContainerRef.current) {
@@ -613,10 +617,20 @@ export default function ChatInterface() {
           transition: background-color 400ms cubic-bezier(1, 0, 0.4, 1),
             box-shadow 400ms cubic-bezier(1, 0, 0.4, 1);
         }
+
+        /* Hide scrollbar for horizontal scroll */
+        :global(.scrollbar-hide) {
+          scrollbar-width: none; /* Firefox */
+          -ms-overflow-style: none; /* Internet Explorer 10+ */
+        }
+
+        :global(.scrollbar-hide::-webkit-scrollbar) {
+          display: none; /* WebKit */
+        }
       `}</style>
 
       {/* Full Screen Layout */}
-      <div className={`chat-container w-screen flex overflow-hidden transition-colors duration-300 ${
+      <div className={`chat-container w-full min-h-screen flex overflow-hidden transition-colors duration-300 ${
         isDarkMode 
           ? 'bg-gradient-to-br from-gray-900 to-gray-800' 
           : 'bg-gradient-to-br from-gray-50 to-gray-100'
@@ -692,12 +706,12 @@ export default function ChatInterface() {
             <h1 className={`text-xl font-semibold mt-3 font-inter-tight transition-colors duration-300 ${
               isDarkMode ? 'text-gray-100' : 'text-gray-900'
             }`}>
-              GlassFactory's chatbot
+              Glass Factory
             </h1>
             <p className={`text-sm mt-1 transition-colors duration-300 ${
               isDarkMode ? 'text-gray-400' : 'text-gray-600'
             }`}>
-              Find the perfect factory for your manufacturing needs
+              Find and connect with the best clothing factories in the world.
             </p>
           </div>
           
@@ -709,11 +723,17 @@ export default function ChatInterface() {
             }`}>
               <button
                 onClick={startNewChat}
-                className={`w-full px-4 py-3 rounded-lg transition-all duration-200 font-medium text-sm flex items-center justify-center gap-2 ${
-                  isDarkMode 
-                    ? 'bg-blue-700 hover:bg-blue-600 text-white' 
-                    : 'bg-blue-600 hover:bg-blue-700 text-white'
-                }`}
+                onMouseMove={(e) => {
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  const x = e.clientX - rect.left;
+                  const y = e.clientY - rect.top;
+                  e.currentTarget.style.background = `radial-gradient(circle at ${x}px ${y}px, #0015ff 0%, #000d99 100%)`;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'linear-gradient(90deg, #0015ff 0%, #000d99 81.25%)';
+                }}
+                className="w-full px-4 py-3 rounded-lg transition-all duration-200 font-medium text-sm flex items-center justify-center gap-2 text-white"
+                style={{ background: 'linear-gradient(90deg, #0015ff 0%, #000d99 81.25%)' }}
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -795,7 +815,7 @@ export default function ChatInterface() {
         </div>
 
         {/* Main Chat Area */}
-        <div className="flex-1 flex flex-col relative">
+        <div className="flex-1 flex flex-col relative min-w-0">
           {/* Mobile Header with Hamburger */}
           <div className={`md:hidden flex items-center p-4 border-b transition-colors duration-300 ${
             isDarkMode ? 'border-gray-700/50 bg-gray-800/80' : 'border-gray-200/50 bg-white/80'
@@ -829,16 +849,6 @@ export default function ChatInterface() {
           {/* Chat Background */}
           <div className="absolute inset-0 bg-gradient-to-br from-primary-500/2 to-transparent pointer-events-none"></div>
           
-          {/* Glass Factory Logo Watermark */}
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
-            <Image
-              src={GFLogo}
-              alt="Glass Factory Logo"
-              width={300}
-              height={80}
-              className={`${isDarkMode ? 'opacity-10 invert' : 'opacity-20'} select-none transition-all duration-300`}
-            />
-          </div>
 
           {/* Messages Area */}
           <div 
@@ -874,8 +884,8 @@ export default function ChatInterface() {
                   className={`min-w-[80px] max-w-xs md:max-w-lg rounded-lg font-inter-tight shadow-sm break-words overflow-hidden ${
                     message.isUser
                       ? isDarkMode
-                        ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white'
-                        : 'bg-gradient-primary text-neutral-0'
+                        ? 'bg-gradient-to-r from-gray-600 to-gray-800 text-white border border-gray-500'
+                        : 'bg-gradient-to-r from-gray-100 to-gray-300 text-gray-900 border border-gray-400'
                       : isDarkMode
                         ? 'glass-bubble-dark text-gray-100'
                         : 'glass-bubble text-neutral-900'
@@ -899,7 +909,7 @@ export default function ChatInterface() {
                         // User messages: timestamp at left corner, text right-aligned with space
                         <div className="flex justify-between items-end">
                           <span className={`text-body-xs flex-shrink-0 ${
-                            isDarkMode ? 'text-blue-200' : 'text-primary-100'
+                            isDarkMode ? 'text-gray-300' : 'text-gray-600'
                           }`}>
                             {message.timestamp.toLocaleTimeString([], { 
                               hour: '2-digit', 
@@ -993,7 +1003,7 @@ export default function ChatInterface() {
                   {message.image && !message.text && (
                     <div className={`px-4 py-2 ${message.isUser ? 'text-right' : 'text-left'}`}>
                       <span className={`text-body-xs ${
-                        message.isUser ? 'text-primary-100' : 'text-neutral-500'
+                        message.isUser ? (isDarkMode ? 'text-gray-300' : 'text-gray-600') : 'text-neutral-500'
                       }`}>
                         {message.timestamp.toLocaleTimeString([], { 
                           hour: '2-digit', 
@@ -1019,9 +1029,9 @@ export default function ChatInterface() {
               </div>
             ))}
             
-            {/* Sample Prompts - Show only when chat is empty (just greeting) */}
+            {/* Sample Prompts - Desktop only */}
             {messages.length === 1 && (
-              <div className="flex flex-col items-center justify-center py-8 space-y-6">
+              <div className="hidden md:flex flex-col items-center justify-center py-8 space-y-6">
                 <div className="text-center mb-4">
                   <p className={`text-sm font-medium mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
                     Try asking something like:
@@ -1168,6 +1178,108 @@ export default function ChatInterface() {
           {/* Input Area */}
           <div className="p-4 md:p-6 flex-shrink-0 relative z-10 pb-safe-area-inset-bottom">
             <div className="ml-0 mr-0 md:ml-8 md:mr-12">
+              {/* Quick Search - Mobile only, horizontal scroll */}
+              {messages.length === 1 && (
+                <div className="md:hidden mb-4">
+                  <div className="overflow-x-auto scrollbar-hide -mx-4">
+                    <div className="flex space-x-3 pb-2 pl-4 pr-4">
+                      {[
+                        "I want to make 100 leather sneakers in Portugal.",
+                        "Help me find a luxury handbag factory in Italy.",
+                        "I'm looking for Japanese denim factories.",
+                        "Can you help me make a techpack?"
+                      ].map((prompt, index) => (
+                        <button
+                          key={index}
+                          onClick={async () => {
+                            setInputValue(prompt);
+                            
+                            // Directly send the message without waiting for input state
+                            if (!isLoading && sessionId) {
+                              const userMessage = {
+                                id: Date.now().toString(),
+                                text: prompt,
+                                isUser: true,
+                                timestamp: new Date()
+                              };
+
+                              setMessages(prev => [...prev, userMessage]);
+                              setInputValue('');
+                              setIsLoading(true);
+
+                              // Scroll to show the user's message immediately after sending
+                              setTimeout(() => {
+                                if (messagesContainerRef.current) {
+                                  const container = messagesContainerRef.current;
+                                  container.scrollTop = container.scrollHeight;
+                                }
+                              }, 50);
+
+                              try {
+                                const requestBody = {
+                                  message: prompt,
+                                  sessionId: sessionId,
+                                  isNewSession: isNewSession,
+                                  userProfile: {
+                                    isAuthenticated: isAuthenticated
+                                  }
+                                };
+
+                                if (isNewSession) {
+                                  setIsNewSession(false);
+                                }
+
+                                const response = await fetch('/api/chat', {
+                                  method: 'POST',
+                                  headers: {
+                                    'Content-Type': 'application/json',
+                                  },
+                                  body: JSON.stringify(requestBody),
+                                });
+
+                                if (!response.ok) {
+                                  throw new Error('Failed to send message');
+                                }
+
+                                const data = await response.json();
+                                
+                                const botMessage = {
+                                  id: (Date.now() + 1).toString(),
+                                  text: data.response || "Sorry, I couldn't process that request.",
+                                  isUser: false,
+                                  timestamp: new Date()
+                                };
+
+                                setMessages(prev => [...prev, botMessage]);
+                                startTypingEffect(botMessage.id, botMessage.text);
+                              } catch (error) {
+                                console.error('Error sending message:', error);
+                                const errorMessage = {
+                                  id: (Date.now() + 1).toString(),
+                                  text: "Sorry, I'm having trouble connecting right now. Please try again later.",
+                                  isUser: false,
+                                  timestamp: new Date()
+                                };
+                                setMessages(prev => [...prev, errorMessage]);
+                              } finally {
+                                setIsLoading(false);
+                              }
+                            }
+                          }}
+                          className={`flex-shrink-0 px-3 py-2 rounded-xl border text-left transition-all duration-200 w-48 ${
+                            isDarkMode
+                              ? 'bg-gray-800/50 border-gray-700 hover:bg-gray-700/50 text-gray-200 hover:border-gray-600'
+                              : 'bg-white/80 border-gray-200 hover:bg-gray-50 text-gray-700 hover:border-gray-300'
+                          }`}
+                        >
+                          <span className="text-sm font-medium leading-relaxed">{prompt}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Image Preview */}
               {imagePreview && (
                 <div className={`mb-4 p-3 border rounded-lg transition-colors duration-300 ${
@@ -1218,25 +1330,49 @@ export default function ChatInterface() {
                   className="hidden"
                 />
                 
-                <input
-                  type="text"
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  placeholder="Ask about factories, production, or sourcing..."
-                  className={`flex-1 border rounded-lg px-4 py-3 focus:outline-none font-inter-tight text-body-regular transition-all duration-200 ${
-                    isDarkMode 
-                      ? 'border-gray-600 focus:border-gray-500 focus:ring-2 focus:ring-gray-700 bg-gray-700 text-gray-100 placeholder-gray-400'
-                      : 'border-gray-300 focus:border-gray-400 focus:ring-2 focus:ring-gray-200 bg-white text-gray-900 placeholder-gray-500'
-                  }`}
-                  disabled={isLoading}
-                />
+                {/* Input field with integrated upload icon */}
+                <div className="flex-1 relative">
+                  <div className="relative flex items-center">
+                    {/* Upload icon inside input - only on mobile */}
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={isLoading}
+                      className={`absolute left-3 z-10 p-1 md:hidden transition-colors duration-200 ${
+                        isDarkMode 
+                          ? 'text-gray-400 hover:text-gray-200' 
+                          : 'text-gray-500 hover:text-gray-700'
+                      }`}
+                      title="Attach image"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                      </svg>
+                    </button>
+                    
+                    <input
+                      type="text"
+                      value={inputValue}
+                      onChange={(e) => setInputValue(e.target.value)}
+                      onKeyPress={handleKeyPress}
+                      placeholder="Ask about factories, production, or sourcing..."
+                      className={`w-full border rounded-lg focus:outline-none font-inter-tight text-body-regular transition-all duration-200 ${
+                        isDarkMode 
+                          ? 'border-gray-600 focus:border-gray-500 focus:ring-2 focus:ring-gray-700 bg-gray-700 text-gray-100 placeholder-gray-400'
+                          : 'border-gray-300 focus:border-gray-400 focus:ring-2 focus:ring-gray-200 bg-white text-gray-900 placeholder-gray-500'
+                      } ${
+                        // Adjust padding and height based on screen size - more left padding on mobile for icon, taller on mobile
+                        'py-4 pl-12 pr-4 md:py-3 md:pl-4 md:pr-4'
+                      }`}
+                      disabled={isLoading}
+                    />
+                  </div>
+                </div>
                 
-                {/* Attachment button */}
+                {/* Attachment button - desktop only */}
                 <button
                   onClick={() => fileInputRef.current?.click()}
                   disabled={isLoading}
-                  className={`hover:shadow-lg disabled:opacity-50 px-4 md:px-6 py-3 rounded-lg transition-all duration-button shadow-sm ${
+                  className={`hidden md:flex hover:shadow-lg disabled:opacity-50 px-4 md:px-6 py-3 rounded-lg transition-all duration-button shadow-sm ${
                     isDarkMode 
                       ? 'glass-bubble-dark text-gray-100' 
                       : 'glass-bubble text-neutral-900'
