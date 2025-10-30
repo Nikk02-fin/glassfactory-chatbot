@@ -655,6 +655,62 @@ export default function ChatInterface() {
         :global(.scrollbar-hide::-webkit-scrollbar) {
           display: none; /* WebKit */
         }
+
+        /* iOS specific viewport fixes */
+        :global(html) {
+          height: 100%;
+          height: 100vh;
+          height: 100dvh;
+          -webkit-text-size-adjust: 100%;
+        }
+
+        :global(body) {
+          height: 100%;
+          height: 100vh;
+          height: 100dvh;
+          overflow: hidden;
+          -webkit-overflow-scrolling: touch;
+          position: fixed;
+          width: 100%;
+        }
+
+        /* Chat container mobile fixes */
+        :global(.chat-container) {
+          height: 100vh;
+          height: 100dvh;
+          max-height: 100vh;
+          max-height: 100dvh;
+          position: relative;
+          overflow: hidden;
+        }
+
+        /* iOS Safari specific fixes */
+        @supports (-webkit-touch-callout: none) {
+          :global(.chat-container) {
+            height: -webkit-fill-available;
+            max-height: -webkit-fill-available;
+          }
+        }
+
+        /* Mobile safe area support - iOS specific */
+        @supports (padding: max(0px)) {
+          :global(.mobile-safe-top) {
+            padding-top: max(1rem, env(safe-area-inset-top)) !important;
+          }
+          
+          :global(.mobile-safe-bottom) {
+            padding-bottom: max(1rem, env(safe-area-inset-bottom)) !important;
+          }
+        }
+
+        /* iOS input zoom prevention */
+        @media screen and (max-width: 767px) {
+          :global(input[type="text"]) {
+            font-size: 16px !important;
+            -webkit-appearance: none;
+            border-radius: 0;
+          }
+        }
       `}</style>
 
       {/* Full Screen Layout */}
@@ -662,7 +718,7 @@ export default function ChatInterface() {
         isDarkMode 
           ? 'bg-gradient-to-br from-gray-900 to-gray-800' 
           : 'bg-gradient-to-br from-gray-200 to-gray-300'
-      }`}>
+      }`} style={{ height: '100vh', height: '100dvh' }}>
         {/* Mobile Overlay */}
         {isMobileSidebarOpen && (
           <div 
@@ -847,7 +903,7 @@ export default function ChatInterface() {
           {/* Mobile Header with Hamburger */}
           <div className={`md:hidden flex items-center p-4 border-b transition-colors duration-300 ${
             isDarkMode ? 'border-gray-700/50 bg-gray-800/80' : 'border-gray-200/50 bg-white/80'
-          } backdrop-blur-sm relative z-20`}>
+          } backdrop-blur-sm relative z-20`} style={{ paddingTop: 'max(1rem, env(safe-area-inset-top))' }}>
             <button
               onClick={() => setIsMobileSidebarOpen(true)}
               className={`p-2 rounded-lg transition-all duration-200 ${
@@ -1220,7 +1276,7 @@ export default function ChatInterface() {
           </div>
 
           {/* Input Area */}
-          <div className="p-4 md:p-6 flex-shrink-0 relative z-10 pb-safe-area-inset-bottom">
+          <div className="p-4 md:p-6 flex-shrink-0 relative z-10" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
             <div className="ml-0 mr-0 md:ml-8 md:mr-12">
               {/* Quick Search - Mobile only, horizontal scroll */}
               {messages.length === 1 && (
