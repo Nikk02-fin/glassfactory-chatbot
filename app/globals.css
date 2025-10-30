@@ -4,14 +4,14 @@
 
 @font-face {
   font-family: 'Glass';
-  src: url('../assets/fonts/Glass.otf') format('opentype');
+  src: url('/fonts/Glass.otf') format('opentype');
   font-weight: normal;
   font-style: normal;
 }
 
 @font-face {
   font-family: 'Glass';
-  src: url('../assets/fonts/Glass-Bold.otf') format('opentype');
+  src: url('/fonts/Glass-Bold.otf') format('opentype');
   font-weight: bold;
   font-style: normal;
 }
