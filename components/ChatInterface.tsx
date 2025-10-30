@@ -46,6 +46,34 @@ export default function ChatInterface() {
   // Get user profile info
   const { profilePicture, isAuthenticated } = useUserStore();
 
+  // Sample prompts pool
+  const allPrompts = [
+    "What factories do you recommend for producing leather handbags in Italy?",
+    "Can you find me a garment factory with low MOQ for a start-up brand?",
+    "I need sneaker manufacturers in Portugal. What options are available?",
+    "Help me find accessory factories that can handle custom packaging.",
+    "What is the typical lead time for dyeing and washing services?",
+    "Can you suggest factories that specialize in eco-friendly trims?",
+    "I'm looking for a factory in Spain that produces embellished garments.",
+    "What should I include in a tech pack for a fashion accessory?",
+    "Find me factories offering small-batch production under 500 units.",
+    "Which factories can produce custom sneaker soles?",
+    "I want to produce scarves with unique prints. Where should I look?",
+    "Do you have recommendations for factories with fast turnaround for samples?",
+    "What are the price ranges for MOQ in garment factories in France?",
+    "Can you advise on factories that accept a basic reference image instead of a tech pack?",
+    "I'm interested in factories near Italy but outside the country for leather goods. What do you suggest?"
+  ];
+
+  // Function to get 4 random prompts
+  const getRandomPrompts = () => {
+    const shuffled = [...allPrompts].sort(() => 0.5 - Math.random());
+    return shuffled.slice(0, 4);
+  };
+
+  // State for random prompts (initialized once)
+  const [randomPrompts] = useState(() => getRandomPrompts());
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -633,7 +661,7 @@ export default function ChatInterface() {
       <div className={`chat-container w-full min-h-screen flex overflow-hidden transition-colors duration-300 ${
         isDarkMode 
           ? 'bg-gradient-to-br from-gray-900 to-gray-800' 
-          : 'bg-gradient-to-br from-gray-50 to-gray-100'
+          : 'bg-gradient-to-br from-gray-200 to-gray-300'
       }`}>
         {/* Mobile Overlay */}
         {isMobileSidebarOpen && (
@@ -884,12 +912,33 @@ export default function ChatInterface() {
                   className={`min-w-[80px] max-w-xs md:max-w-lg rounded-lg font-inter-tight shadow-sm break-words overflow-hidden ${
                     message.isUser
                       ? isDarkMode
-                        ? 'bg-gradient-to-r from-gray-600 to-gray-800 text-white border border-gray-500'
-                        : 'bg-gradient-to-r from-gray-100 to-gray-300 text-gray-900 border border-gray-400'
+                        ? 'glass-bubble-dark text-gray-100'
+                        : 'glass-bubble text-neutral-900'
                       : isDarkMode
                         ? 'glass-bubble-dark text-gray-100'
                         : 'glass-bubble text-neutral-900'
                   }`}
+                  style={{
+                    ...(message.isUser ? {
+                      background: isDarkMode 
+                        ? 'linear-gradient(to right, rgb(75, 85, 99), rgb(31, 41, 55))' 
+                        : 'linear-gradient(to right, rgb(243, 244, 246), rgb(209, 213, 219))',
+                      backdropFilter: 'blur(6px) saturate(110%)',
+                      WebkitBackdropFilter: 'blur(6px) saturate(110%)',
+                      boxShadow: isDarkMode 
+                        ? '4px 4px 12px rgba(0, 0, 0, 0.3), -2px -2px 6px rgba(75, 85, 99, 0.1)' 
+                        : '4px 4px 12px rgba(0, 0, 0, 0.1), -2px -2px 6px rgba(255, 255, 255, 0.8)'
+                    } : {
+                      background: isDarkMode
+                        ? 'linear-gradient(135deg, rgba(55, 65, 81, 0.4), rgba(75, 85, 99, 0.2))'
+                        : 'linear-gradient(135deg, rgba(255, 255, 255, 0.8), rgba(249, 250, 251, 0.6))',
+                      backdropFilter: 'blur(8px) saturate(120%)',
+                      WebkitBackdropFilter: 'blur(8px) saturate(120%)',
+                      boxShadow: isDarkMode
+                        ? '-4px 4px 12px rgba(0, 0, 0, 0.3), 2px -2px 6px rgba(55, 65, 81, 0.1)'
+                        : '-4px 4px 12px rgba(0, 0, 0, 0.1), 2px -2px 6px rgba(255, 255, 255, 0.8)'
+                    })
+                  }}
                 >
                   {/* Image display */}
                   {message.image && (
@@ -1039,12 +1088,7 @@ export default function ChatInterface() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl w-full">
-                  {[
-                    "I want to make 100 leather sneakers in Portugal.",
-                    "Help me find a luxury handbag factory in Italy.",
-                    "I'm looking for Japanese denim factories.",
-                    "Can you help me make a techpack?"
-                  ].map((prompt, index) => (
+                  {randomPrompts.map((prompt, index) => (
                     <button
                       key={index}
                       onClick={async () => {
@@ -1183,12 +1227,7 @@ export default function ChatInterface() {
                 <div className="md:hidden mb-4">
                   <div className="overflow-x-auto scrollbar-hide -mx-4">
                     <div className="flex space-x-3 pb-2 pl-4 pr-4">
-                      {[
-                        "I want to make 100 leather sneakers in Portugal.",
-                        "Help me find a luxury handbag factory in Italy.",
-                        "I'm looking for Japanese denim factories.",
-                        "Can you help me make a techpack?"
-                      ].map((prompt, index) => (
+                      {randomPrompts.map((prompt, index) => (
                         <button
                           key={index}
                           onClick={async () => {
@@ -1354,7 +1393,7 @@ export default function ChatInterface() {
                       value={inputValue}
                       onChange={(e) => setInputValue(e.target.value)}
                       onKeyPress={handleKeyPress}
-                      placeholder="Ask about factories, production, or sourcing..."
+                      placeholder="Ask Glass AI"
                       className={`w-full border rounded-lg focus:outline-none font-inter-tight text-body-regular transition-all duration-200 ${
                         isDarkMode 
                           ? 'border-gray-600 focus:border-gray-500 focus:ring-2 focus:ring-gray-700 bg-gray-700 text-gray-100 placeholder-gray-400'
@@ -1372,7 +1411,7 @@ export default function ChatInterface() {
                 <button
                   onClick={() => fileInputRef.current?.click()}
                   disabled={isLoading}
-                  className={`hidden md:flex hover:shadow-lg disabled:opacity-50 px-4 md:px-6 py-3 rounded-lg transition-all duration-button shadow-sm ${
+                  className={`hidden md:flex items-center justify-center hover:shadow-lg disabled:opacity-50 px-4 md:px-6 py-3 rounded-lg transition-all duration-button shadow-sm ${
                     isDarkMode 
                       ? 'glass-bubble-dark text-gray-100' 
                       : 'glass-bubble text-neutral-900'
@@ -1387,11 +1426,25 @@ export default function ChatInterface() {
                 <button
                   onClick={sendMessage}
                   disabled={(!inputValue.trim() && !selectedImage) || isLoading}
-                  className={`hover:shadow-lg disabled:opacity-50 px-4 md:px-6 py-3 rounded-lg transition-all duration-button font-inter-tight font-medium shadow-sm ${
-                    isDarkMode 
-                      ? 'glass-bubble-dark text-gray-100' 
-                      : 'glass-bubble text-neutral-900'
-                  }`}
+                  onMouseMove={(e) => {
+                    if (!e.currentTarget.disabled) {
+                      const rect = e.currentTarget.getBoundingClientRect();
+                      const x = e.clientX - rect.left;
+                      const y = e.clientY - rect.top;
+                      e.currentTarget.style.background = `radial-gradient(circle at ${x}px ${y}px, #0015ff 0%, #000d99 100%)`;
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!e.currentTarget.disabled) {
+                      e.currentTarget.style.background = 'linear-gradient(90deg, #0015ff 0%, #000d99 81.25%)';
+                    }
+                  }}
+                  className="hover:shadow-lg disabled:opacity-50 px-4 md:px-6 py-3 rounded-lg transition-all duration-200 font-inter-tight font-medium text-white"
+                  style={{ 
+                    background: (!inputValue.trim() && !selectedImage) || isLoading 
+                      ? '#6b7280' 
+                      : 'linear-gradient(90deg, #0015ff 0%, #000d99 81.25%)' 
+                  }}
                 >
                   {isLoading ? (
                     <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
