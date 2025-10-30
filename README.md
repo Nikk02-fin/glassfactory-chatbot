@@ -6,7 +6,7 @@ A standalone Next.js application featuring the Glass Factory AI assistant with b
 
 - 🤖 AI-powered chat interface
 - 🎨 Glassmorphism design with frosted glass effects
-- 📱 Fully responsive design
+
 - ⚡ Built with Next.js 14 and TypeScript
 - 🎯 Ready for Vercel deployment
 

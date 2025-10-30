@@ -144,6 +144,20 @@ export default function ChatInterface() {
     removeImage();
     setIsLoading(true);
 
+    // Scroll to show the user's message immediately after sending
+    setTimeout(() => {
+      if (messagesContainerRef.current) {
+        const isMobile = window.innerWidth < 768;
+        
+        if (isMobile) {
+          const container = messagesContainerRef.current;
+          container.scrollTop = container.scrollHeight;
+        } else {
+          messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        }
+      }
+    }, 50);
+
     try {
       console.log('Sending message with sessionId:', sessionId, 'isNewSession:', isNewSession);
       const requestBody: any = { 
@@ -400,7 +414,10 @@ export default function ChatInterface() {
   const checkIfUserScrolledUp = () => {
     if (messagesContainerRef.current) {
       const { scrollTop, scrollHeight, clientHeight } = messagesContainerRef.current;
-      const isAtBottom = scrollTop + clientHeight >= scrollHeight - 10; // 10px threshold
+      // Increase threshold for mobile devices due to different scrolling behavior
+      const isMobile = window.innerWidth < 768;
+      const threshold = isMobile ? 50 : 10; // Larger threshold for mobile
+      const isAtBottom = scrollTop + clientHeight >= scrollHeight - threshold;
       userScrolledUp.current = !isAtBottom;
     }
   };
@@ -424,10 +441,24 @@ export default function ChatInterface() {
         currentIndex++;
         
         // Only auto-scroll if user hasn't scrolled up
-        if (!userScrolledUp.current) {
-          setTimeout(() => {
-            messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-          }, 10);
+        if (!userScrolledUp.current && messagesContainerRef.current) {
+          // Use different scrolling approach for mobile vs desktop
+          const isMobile = window.innerWidth < 768;
+          
+          if (isMobile) {
+            // For mobile, use scrollTop directly with a small delay
+            setTimeout(() => {
+              if (messagesContainerRef.current) {
+                const container = messagesContainerRef.current;
+                container.scrollTop = container.scrollHeight;
+              }
+            }, 20);
+          } else {
+            // For desktop, use scrollIntoView
+            setTimeout(() => {
+              messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+            }, 10);
+          }
         }
       } else {
         // Typing complete
@@ -436,10 +467,21 @@ export default function ChatInterface() {
         setDisplayedText('');
         
         // Final scroll only if user hasn't scrolled up
-        if (!userScrolledUp.current) {
-          setTimeout(() => {
-            messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-          }, 100);
+        if (!userScrolledUp.current && messagesContainerRef.current) {
+          const isMobile = window.innerWidth < 768;
+          
+          if (isMobile) {
+            setTimeout(() => {
+              if (messagesContainerRef.current) {
+                const container = messagesContainerRef.current;
+                container.scrollTop = container.scrollHeight;
+              }
+            }, 50);
+          } else {
+            setTimeout(() => {
+              messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+            }, 100);
+          }
         }
       }
     }, typingSpeed);
@@ -493,47 +535,47 @@ export default function ChatInterface() {
           box-sizing: border-box;
           border: none;
           border-radius: 12px;
-          background-color: color-mix(in srgb, var(--c-light) 3%, transparent);
+          background-color: color-mix(in srgb, var(--c-light) 1%, transparent);
           box-shadow: 
             /* Outer border light effect */
-            inset 0 0 0 1px color-mix(in srgb, var(--c-light) calc(var(--glass-reflex-light) * 25%), transparent),
+            inset 0 0 0 1px color-mix(in srgb, var(--c-light) calc(var(--glass-reflex-light) * 15%), transparent),
             
             /* Top edge highlight (light from above) */
-            inset 0 2px 4px -1px color-mix(in srgb, var(--c-light) calc(var(--glass-reflex-light) * 90%), transparent),
+            inset 0 2px 4px -1px color-mix(in srgb, var(--c-light) calc(var(--glass-reflex-light) * 60%), transparent),
             
             /* Left edge highlight */
-            inset 2px 0 4px -1px color-mix(in srgb, var(--c-light) calc(var(--glass-reflex-light) * 70%), transparent),
+            inset 2px 0 4px -1px color-mix(in srgb, var(--c-light) calc(var(--glass-reflex-light) * 40%), transparent),
             
             /* Bottom edge shadow */
-            inset 0 -2px 6px -1px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 15%), transparent),
+            inset 0 -2px 6px -1px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 8%), transparent),
             
             /* Right edge shadow */
-            inset -2px 0 6px -1px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 10%), transparent),
+            inset -2px 0 6px -1px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 5%), transparent),
             
             /* Inner glow for depth */
-            inset 0 0 20px 0 color-mix(in srgb, var(--c-light) calc(var(--glass-reflex-light) * 8%), transparent),
+            inset 0 0 20px 0 color-mix(in srgb, var(--c-light) calc(var(--glass-reflex-light) * 4%), transparent),
             
             /* Outer drop shadow */
-            0 4px 12px 0 color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 8%), transparent),
-            0 2px 4px 0 color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 12%), transparent);
+            0 4px 12px 0 color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 4%), transparent),
+            0 2px 4px 0 color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 6%), transparent);
             
-          backdrop-filter: blur(6px) saturate(110%);
-          -webkit-backdrop-filter: blur(6px) saturate(110%);
+          backdrop-filter: blur(3px) saturate(120%);
+          -webkit-backdrop-filter: blur(3px) saturate(120%);
           transition: background-color 400ms cubic-bezier(1, 0, 0.4, 1),
             box-shadow 400ms cubic-bezier(1, 0, 0.4, 1);
         }
 
         @supports (-webkit-backdrop-filter: blur(0)) and (not (backdrop-filter: url(#x))) {
           :global(.glass-bubble) {
-            backdrop-filter: blur(20px) saturate(120%) !important;
-            -webkit-backdrop-filter: blur(20px) saturate(120%) !important;
+            backdrop-filter: blur(8px) saturate(130%) !important;
+            -webkit-backdrop-filter: blur(8px) saturate(130%) !important;
           }
         }
 
         @-moz-document url-prefix() {
           :global(.glass-bubble) {
-            backdrop-filter: blur(20px) saturate(120%) !important;
-            -webkit-backdrop-filter: blur(20px) saturate(120%) !important;
+            backdrop-filter: blur(8px) saturate(130%) !important;
+            -webkit-backdrop-filter: blur(8px) saturate(130%) !important;
           }
         }
 
@@ -574,7 +616,7 @@ export default function ChatInterface() {
       `}</style>
 
       {/* Full Screen Layout */}
-      <div className={`h-screen w-screen flex overflow-hidden transition-colors duration-300 ${
+      <div className={`chat-container w-screen flex overflow-hidden transition-colors duration-300 ${
         isDarkMode 
           ? 'bg-gradient-to-br from-gray-900 to-gray-800' 
           : 'bg-gradient-to-br from-gray-50 to-gray-100'
@@ -794,7 +836,7 @@ export default function ChatInterface() {
               alt="Glass Factory Logo"
               width={300}
               height={80}
-              className={`opacity-10 select-none transition-all duration-300 ${isDarkMode ? 'invert' : ''}`}
+              className={`${isDarkMode ? 'opacity-10 invert' : 'opacity-20'} select-none transition-all duration-300`}
             />
           </div>
 
@@ -803,6 +845,11 @@ export default function ChatInterface() {
             ref={messagesContainerRef}
             onScroll={checkIfUserScrolledUp}
             className="flex-1 overflow-y-auto p-4 md:p-6 relative z-10"
+            style={{
+              // Improve mobile scrolling performance
+              WebkitOverflowScrolling: 'touch',
+              overscrollBehavior: 'contain'
+            }}
           >
             <div className="min-h-full flex flex-col justify-end space-y-4">
             {messages.map((message) => (
@@ -1006,6 +1053,20 @@ export default function ChatInterface() {
                           setInputValue('');
                           setIsLoading(true);
 
+                          // Scroll to show the user's message immediately after sending
+                          setTimeout(() => {
+                            if (messagesContainerRef.current) {
+                              const isMobile = window.innerWidth < 768;
+                              
+                              if (isMobile) {
+                                const container = messagesContainerRef.current;
+                                container.scrollTop = container.scrollHeight;
+                              } else {
+                                messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+                              }
+                            }
+                          }, 50);
+
                           try {
                             const requestBody = {
                               message: prompt,
@@ -1105,7 +1166,7 @@ export default function ChatInterface() {
           </div>
 
           {/* Input Area */}
-          <div className="p-4 md:p-6 flex-shrink-0 relative z-10">
+          <div className="p-4 md:p-6 flex-shrink-0 relative z-10 pb-safe-area-inset-bottom">
             <div className="ml-0 mr-0 md:ml-8 md:mr-12">
               {/* Image Preview */}
               {imagePreview && (
