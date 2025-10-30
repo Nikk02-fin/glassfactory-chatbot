@@ -718,7 +718,7 @@ export default function ChatInterface() {
         isDarkMode 
           ? 'bg-gradient-to-br from-gray-900 to-gray-800' 
           : 'bg-gradient-to-br from-gray-200 to-gray-300'
-      }`} style={{ height: '100vh', height: '100dvh' }}>
+      }`} style={{ height: '100dvh' }}>
         {/* Mobile Overlay */}
         {isMobileSidebarOpen && (
           <div 
